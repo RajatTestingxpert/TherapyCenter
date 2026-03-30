@@ -1,37 +1,6 @@
-# =============================================================
-# TherapyCenter API — complete test file
-# Usage: open in VS Code with REST Client extension
-#        or in Visual Studio 2022 (built-in .http support)
-#
-# WORKFLOW:
-#   1. Run Phase 1 (register + promote to Admin in MySQL)
-#   2. Run Phase 2 login — copy token into @adminToken
-#   3. Run Phase 3 in order (therapies → doctor → slots)
-#   4. Run Phase 4 onwards
-# =============================================================
+
 
 @host = https://localhost:7226
-
---- paste tokens here after login ---
-@adminToken       = PASTE_ADMIN_TOKEN_HERE
-@receptionistToken = PASTE_RECEPTIONIST_TOKEN_HERE
-@doctorToken      = PASTE_DOCTOR_TOKEN_HERE
-@guardianToken    = PASTE_GUARDIAN_TOKEN_HERE
-
---- paste IDs here as you get them from responses ---
-@therapyId   = 1
-@doctorId    = 1
-@patientId   = 1
-@slotId      = 1
-@appointmentId = 1
-@guardianId  = 1
-@receptionistUserId = 1
-@doctorUserId = 1
-
-
-=============================================================
-PHASE 1 — SELF-REGISTER (to get first user, promote to Admin)
-=============================================================
 
 ### 1a. Register as Guardian (public — no token needed)
 POST {{host}}/api/auth/register
