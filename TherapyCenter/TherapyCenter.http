@@ -1,0 +1,441 @@
+# =============================================================
+# TherapyCenter API — complete test file
+# Usage: open in VS Code with REST Client extension
+#        or in Visual Studio 2022 (built-in .http support)
+#
+# WORKFLOW:
+#   1. Run Phase 1 (register + promote to Admin in MySQL)
+#   2. Run Phase 2 login — copy token into @adminToken
+#   3. Run Phase 3 in order (therapies → doctor → slots)
+#   4. Run Phase 4 onwards
+# =============================================================
+
+@host = https://localhost:7226
+
+--- paste tokens here after login ---
+@adminToken       = PASTE_ADMIN_TOKEN_HERE
+@receptionistToken = PASTE_RECEPTIONIST_TOKEN_HERE
+@doctorToken      = PASTE_DOCTOR_TOKEN_HERE
+@guardianToken    = PASTE_GUARDIAN_TOKEN_HERE
+
+--- paste IDs here as you get them from responses ---
+@therapyId   = 1
+@doctorId    = 1
+@patientId   = 1
+@slotId      = 1
+@appointmentId = 1
+@guardianId  = 1
+@receptionistUserId = 1
+@doctorUserId = 1
+
+
+=============================================================
+PHASE 1 — SELF-REGISTER (to get first user, promote to Admin)
+=============================================================
+
+### 1a. Register as Guardian (public — no token needed)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Ramesh",
+  "lastName": "Kumar",
+  "email": "ramesh@gmail.com",
+  "password": "Guardian@123",
+  "role": "Guardian",
+  "phoneNumber": "9123456789"
+}
+
+### 1b. Register as Patient (public — no token needed)
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Priya",
+  "lastName": "Patel",
+  "email": "priya.patient@gmail.com",
+  "password": "Patient@123",
+  "role": "Patient",
+  "phoneNumber": "9111122233"
+}
+
+### 1c. Try registering as Admin — should return 400
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Hacker",
+  "lastName": "Test",
+  "email": "hack@test.com",
+  "password": "Test@123",
+  "role": "Admin",
+  "phoneNumber": "0000000000"
+}
+
+
+# =============================================================
+# PHASE 2 — LOGIN
+# After each login, copy the token value into the variables above
+# =============================================================
+
+### 2a. Login as Admin
+# After running: copy token → paste into @adminToken above
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@therapy.com",
+  "password": "Admin@123"
+}
+
+### 2b. Login as Receptionist
+# After running: copy token → paste into @receptionistToken above
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "reception@therapy.com",
+  "password": "Reception@123"
+}
+
+### 2c. Login as Doctor
+# After running: copy token → paste into @doctorToken above
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "priya.doctor@therapy.com",
+  "password": "Doctor@123"
+}
+
+### 2d. Login as Guardian
+# After running: copy token → paste into @guardianToken above
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "ramesh@gmail.com",
+  "password": "Guardian@123"
+}
+
+
+# =============================================================
+# PHASE 3 — ADMIN: create staff accounts
+# =============================================================
+
+### 3a. Admin creates a Doctor user account
+# Copy userId from response → paste into @doctorUserId above
+POST {{host}}/api/auth/create-staff
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Dr. Priya",
+  "lastName": "Sharma",
+  "email": "priya.doctor@therapy.com",
+  "password": "Doctor@123",
+  "role": "Doctor",
+  "phoneNumber": "9876543210"
+}
+
+### 3b. Admin creates a Receptionist user account
+# Copy userId from response → paste into @receptionistUserId above
+POST {{host}}/api/auth/create-staff
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "firstName": "Anita",
+  "lastName": "Verma",
+  "email": "reception@therapy.com",
+  "password": "Reception@123",
+  "role": "Receptionist",
+  "phoneNumber": "9812345678"
+}
+
+
+# =============================================================
+# PHASE 4 — ADMIN: therapies
+# =============================================================
+
+### 4a. Create a therapy
+# Copy therapyId from response → paste into @therapyId above
+POST {{host}}/api/admin/therapies
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Speech Therapy",
+  "description": "Helps children with speech and communication disorders",
+  "durationMinutes": 60,
+  "cost": 1500.00
+}
+
+### 4b. Create another therapy
+POST {{host}}/api/admin/therapies
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Occupational Therapy",
+  "description": "Improves fine motor skills and daily living activities",
+  "durationMinutes": 45,
+  "cost": 1200.00
+}
+
+### 4c. Get all therapies
+GET {{host}}/api/admin/therapies
+Authorization: Bearer {{adminToken}}
+
+### 4d. Update a therapy
+PUT {{host}}/api/admin/therapies/{{therapyId}}
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "name": "Speech Therapy (Updated)",
+  "description": "Advanced speech therapy for children aged 3–12",
+  "durationMinutes": 60,
+  "cost": 1800.00
+}
+
+### 4e. Delete a therapy
+DELETE {{host}}/api/admin/therapies/{{therapyId}}
+Authorization: Bearer {{adminToken}}
+
+
+# =============================================================
+# PHASE 5 — ADMIN: doctor profile + slot generation
+# =============================================================
+
+### 5a. Create doctor profile
+# Uses @doctorUserId from step 3a
+# Copy doctorId from response → paste into @doctorId above
+POST {{host}}/api/admin/doctors/profile
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "userId": {{doctorUserId}},
+  "specialization": "Speech-Language Pathology",
+  "bio": "10 years experience working with pediatric patients aged 2-15",
+  "availableDays": "Mon,Tue,Wed,Thu,Fri",
+  "startTime": "09:00:00",
+  "endTime": "17:00:00"
+}
+
+### 5b. Generate slots for the doctor
+POST {{host}}/api/admin/slots/generate
+Content-Type: application/json
+Authorization: Bearer {{adminToken}}
+
+{
+  "doctorId": {{doctorId}},
+  "fromDate": "2025-07-01",
+  "toDate": "2025-07-31"
+}
+
+### 5c. Get all receptionists
+GET {{host}}/api/admin/receptionists
+Authorization: Bearer {{adminToken}}
+
+
+# =============================================================
+# PHASE 6 — RECEPTIONIST: create patient record (offline)
+# =============================================================
+
+### 6a. Create patient
+# Copy patientId from response → paste into @patientId above
+POST {{host}}/api/patient
+Content-Type: application/json
+Authorization: Bearer {{receptionistToken}}
+
+{
+  "firstName": "Aarav",
+  "lastName": "Kumar",
+  "dateOfBirth": "2018-03-15",
+  "gender": "Male",
+  "medicalHistory": "Delayed speech development, diagnosed at age 3. No allergies.",
+  "guardianId": {{guardianId}}
+}
+
+### 6b. Get all patients (staff only)
+GET {{host}}/api/patient
+Authorization: Bearer {{receptionistToken}}
+
+### 6c. Get patient by ID
+GET {{host}}/api/patient/{{patientId}}
+Authorization: Bearer {{receptionistToken}}
+
+### 6d. Guardian views their children
+GET {{host}}/api/patient/guardian/{{guardianId}}
+Authorization: Bearer {{guardianToken}}
+
+
+# =============================================================
+# PHASE 7 — VIEW DOCTORS AND AVAILABLE SLOTS
+# =============================================================
+
+### 7a. Get all doctors (any authenticated user)
+GET {{host}}/api/doctor
+Authorization: Bearer {{guardianToken}}
+
+### 7b. Get doctor by ID
+GET {{host}}/api/doctor/{{doctorId}}
+Authorization: Bearer {{guardianToken}}
+
+### 7c. Get available slots for a doctor on a specific date
+# Copy a slotId from response → paste into @slotId above
+GET {{host}}/api/doctor/{{doctorId}}/slots?date=2025-07-07
+Authorization: Bearer {{guardianToken}}
+
+
+# =============================================================
+# PHASE 8 — BOOKING
+# =============================================================
+
+### 8a. Receptionist books offline (staff booking)
+# Copy appointmentId from response → paste into @appointmentId above
+POST {{host}}/api/appointment/book
+Content-Type: application/json
+Authorization: Bearer {{receptionistToken}}
+
+{
+  "patientId": {{patientId}},
+  "doctorId": {{doctorId}},
+  "therapyId": {{therapyId}},
+  "slotId": {{slotId}},
+  "receptionistId": {{receptionistUserId}},
+  "notes": "Walk-in booking. First session — initial assessment."
+}
+
+### 8b. Try booking the SAME slot again — expect 409 Conflict
+POST {{host}}/api/appointment/book
+Content-Type: application/json
+Authorization: Bearer {{receptionistToken}}
+
+{
+  "patientId": {{patientId}},
+  "doctorId": {{doctorId}},
+  "therapyId": {{therapyId}},
+  "slotId": {{slotId}},
+  "receptionistId": {{receptionistUserId}},
+  "notes": "This should fail with 409"
+}
+
+### 8c. Guardian books online — receptionistId is ignored by server
+# Use a DIFFERENT slotId (pick another from step 7c)
+POST {{host}}/api/appointment/book-online
+Content-Type: application/json
+Authorization: Bearer {{guardianToken}}
+
+{
+  "patientId": {{patientId}},
+  "doctorId": {{doctorId}},
+  "therapyId": {{therapyId}},
+  "slotId": 2,
+  "receptionistId": 999,
+  "notes": "Online booking by guardian. Preferred morning slot."
+}
+
+
+# =============================================================
+# PHASE 9 — VIEWING APPOINTMENTS
+# =============================================================
+
+### 9a. Get appointment by ID
+GET {{host}}/api/appointment/{{appointmentId}}
+Authorization: Bearer {{receptionistToken}}
+
+### 9b. Get all appointments for a patient
+GET {{host}}/api/appointment/patient/{{patientId}}
+Authorization: Bearer {{guardianToken}}
+
+### 9c. Get all appointments for a doctor (staff)
+GET {{host}}/api/appointment/doctor/{{doctorId}}
+Authorization: Bearer {{receptionistToken}}
+
+### 9d. Get appointments by date (staff)
+GET {{host}}/api/appointment/date/2025-07-07
+Authorization: Bearer {{receptionistToken}}
+
+### 9e. Doctor views their own appointments (reads userId from JWT)
+GET {{host}}/api/doctor/my-appointments
+Authorization: Bearer {{doctorToken}}
+
+### 9f. Get doctor's appointments by ID (staff)
+GET {{host}}/api/doctor/{{doctorId}}/appointments
+Authorization: Bearer {{receptionistToken}}
+
+
+# =============================================================
+# PHASE 10 — UPDATE APPOINTMENT STATUS
+# =============================================================
+
+### 10a. Mark appointment as Completed (after session)
+PATCH {{host}}/api/appointment/{{appointmentId}}/status
+Content-Type: application/json
+Authorization: Bearer {{doctorToken}}
+
+{
+  "status": "Completed",
+  "notes": "Patient completed first session. Good engagement. Recommend weekly follow-ups."
+}
+
+### 10b. Cancel an appointment
+PATCH {{host}}/api/appointment/{{appointmentId}}/status
+Content-Type: application/json
+Authorization: Bearer {{receptionistToken}}
+
+{
+  "status": "Cancelled",
+  "notes": "Cancelled by guardian — child unwell."
+}
+
+
+# =============================================================
+# PHASE 11 — SECURITY CHECKS (all should fail)
+# =============================================================
+
+### 11a. No token — expect 401
+GET {{host}}/api/admin/therapies
+
+### 11b. Guardian token on admin route — expect 403
+GET {{host}}/api/admin/therapies
+Authorization: Bearer {{guardianToken}}
+
+### 11c. Guardian tries staff booking route — expect 403
+POST {{host}}/api/appointment/book
+Content-Type: application/json
+Authorization: Bearer {{guardianToken}}
+
+{
+  "patientId": 1,
+  "doctorId": 1,
+  "therapyId": 1,
+  "slotId": 3,
+  "receptionistId": null,
+  "notes": "Guardian trying to use staff endpoint"
+}
+
+### 11d. Wrong password — expect 401
+POST {{host}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@therapy.com",
+  "password": "wrongpassword"
+}
+
+### 11e. Duplicate email registration — expect 400
+POST {{host}}/api/auth/register
+Content-Type: application/json
+
+{
+  "firstName": "Duplicate",
+  "lastName": "User",
+  "email": "ramesh@gmail.com",
+  "password": "Test@123",
+  "role": "Guardian",
+  "phoneNumber": "0000000000"
+}
