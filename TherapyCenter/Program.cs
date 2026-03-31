@@ -7,7 +7,7 @@ using TherapyCenter.Repositories.Implementations;
 using TherapyCenter.Repositories.Interfaces;
 using TherapyCenter.Services.Interfaces;
 using TherapyCenter.Services.Implementations;
-//using Microsoft.OpenApi.Models;
+
 
 namespace TherapyCenter
 {
@@ -15,8 +15,7 @@ namespace TherapyCenter
     {
         public static void Main(string[] args)
         {
-            try
-            {
+           
                 var builder = WebApplication.CreateBuilder(args);
 
                 // ── 1. MySQL via Pomelo ───────────────────────────────────────────────────────
@@ -89,15 +88,9 @@ namespace TherapyCenter
                 app.UseAuthorization();
                 app.MapControllers();
                 app.Run();
-            }
-            catch (System.Reflection.ReflectionTypeLoadException ex)
-            {
-                foreach (var loaderException in ex.LoaderExceptions)
-                {
-                    Console.WriteLine(loaderException.Message);
-                }
-                throw;
-            }
+            
+        
+            
         }
     }
 }

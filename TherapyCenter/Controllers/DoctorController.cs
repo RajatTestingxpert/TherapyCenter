@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using TherapyCenter.Services.Interfaces;
-using TherapyCenter.Services.Interfaces;
+
 
 namespace TherapyCenter.API.Controllers
 {

@@ -2,8 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using TherapyCenter.DTO_s.Appointment;
 using TherapyCenter.Services.Interfaces;
-using TherapyCenter.DTO_s.Appointment;
-using TherapyCenter.Services.Interfaces;
 
 namespace TherapyCenter.API.Controllers
 {

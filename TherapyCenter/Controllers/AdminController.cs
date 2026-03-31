@@ -2,8 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TherapyCenter.DTO_s.Admin;
 using TherapyCenter.Services.Interfaces;
-using TherapyCenter.DTO_s.Admin;
-using TherapyCenter.Services.Interfaces;
+
 
 namespace TherapyCenter.API.Controllers
 {
