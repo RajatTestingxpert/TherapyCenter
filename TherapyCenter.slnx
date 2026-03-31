@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="TherapyCenter.tests/TherapyCenter.tests.csproj" Id="b73a0440-d947-4b24-88e4-26c55e025a0e" />
   <Project Path="TherapyCenter/TherapyCenter.csproj" />
 </Solution>
